@@ -1,24 +1,40 @@
+---
 apiVersion: v2
+appVersion: 2022.5.4
+description: Home Assistant
 name: home-assistant
-description: A Helm chart for Kubernetes
-
-# A chart can be either an 'application' or a 'library' chart.
-#
-# Application charts are a collection of templates that can be packaged into versioned archives
-# to be deployed.
-#
-# Library charts provide useful utilities or functions for the chart developer. They're included as
-# a dependency of application charts to inject those utilities and functions into the rendering
-# pipeline. Library charts do not define any templates and therefore cannot be deployed.
-type: application
-
-# This is the chart version. This version number should be incremented each time you make changes
-# to the chart and its templates, including the app version.
-# Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.1.0
-
-# This is the version number of the application being deployed. This version number should be
-# incremented each time you make changes to the application. Versions are not expected to
-# follow Semantic Versioning. They should reflect the version the application is using.
-# It is recommended to use it with quotes.
-appVersion: "1.16.0"
+version: 13.4.2
+kubeVersion: ">=1.16.0-0"
+keywords:
+  - home-assistant
+  - hass
+  - homeassistant
+home: https://github.com/RuneRoven/helm-charts/charts/home-assistant/
+icon: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Home_Assistant_Logo.svg/519px-Home_Assistant_Logo.svg.png
+sources:
+  - https://github.com/home-assistant/home-assistant
+  - https://github.com/cdr/code-server
+  - https://github.com/k8s-at-home/charts/tree/master/charts/stable/home-assistant
+maintainers:
+  - name: RuneRoven
+    email: none@none.no
+dependencies:
+  - name: common
+    repository: https://library-charts.k8s-at-home.com
+    version: 4.5.2
+  - name: postgresql
+    version: 11.6.12
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: mariadb
+    version: 11.0.14
+    repository: https://charts.bitnami.com/bitnami
+    condition: mariadb.enabled
+  - name: influxdb
+    version: 5.3.5
+    repository: https://charts.bitnami.com/bitnami
+    condition: influxdb.enabled
+annotations:
+  artifacthub.io/changes: |-
+    - kind: changed
+      description: Upgraded `common` chart dependency to version 4.5.2
