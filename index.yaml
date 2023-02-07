@@ -7,7 +7,7 @@ entries:
           description: Upgraded `common` chart dependency to version 4.5.2
     apiVersion: v2
     appVersion: 2022.5.4
-    created: "2023-02-07T21:20:33.1550378+01:00"
+    created: "2023-02-07T21:34:46.3916595+01:00"
     description: Home Assistant
     digest: bc1748f7207979d1b9f81dca552759f6fdc8a9dcd7ee3a76b553f3d4eb7895c1
     home: https://github.com/RuneRoven/helm-charts/charts/home-assistant/
@@ -26,16 +26,6 @@ entries:
     - https://github.com/cdr/code-server
     - https://github.com/k8s-at-home/charts/tree/master/charts/stable/home-assistant
     urls:
-    - https://github.com/RuneRoven/helm/charts/home-assistant/home-assistant-13.4.2.tgz
+    - https://runeroven.github.io/helm/home-assistant-13.4.2.tgz
     version: 13.4.2
-  - apiVersion: v2
-    appVersion: 1.16.0
-    created: "2023-02-07T21:20:33.154548+01:00"
-    description: A Helm chart for Kubernetes
-    digest: d9ed9d97bf055d3f7a202203ea475806ce86e1f382c66e0426196171496f30ec
-    name: home-assistant
-    type: application
-    urls:
-    - https://github.com/RuneRoven/helm/charts/home-assistant/home-assistant-0.1.0.tgz
-    version: 0.1.0
-generated: "2023-02-07T21:20:33.1489252+01:00"
+generated: "2023-02-07T21:34:46.3905497+01:00"
