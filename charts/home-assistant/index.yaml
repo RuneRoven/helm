@@ -7,9 +7,9 @@ entries:
           description: Upgraded `common` chart dependency to version 4.5.2
     apiVersion: v2
     appVersion: 2022.5.4
-    created: "2023-02-07T22:00:07.7791483+01:00"
+    created: "2023-02-07T22:06:05.891107+01:00"
     description: Home Assistant
-    digest: 6ea8451fbf05905f5d9832dd4bd1dbe2941057167d57fea92d4e0154c7737a33
+    digest: 3066bd3375ba3f4c5a849aee40f98d7cf245ffefb427201caec3860eb2bd67f9
     home: https://github.com/RuneRoven/helm-charts/charts/home-assistant/
     icon: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Home_Assistant_Logo.svg/519px-Home_Assistant_Logo.svg.png
     keywords:
@@ -28,4 +28,4 @@ entries:
     urls:
     - https://runeroven.github.io/helm/home-assistant-13.4.2.tgz
     version: 13.4.2
-generated: "2023-02-07T22:00:07.7791483+01:00"
+generated: "2023-02-07T22:06:05.8889982+01:00"
