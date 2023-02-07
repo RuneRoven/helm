@@ -4,7 +4,7 @@
 
 Home Assistant
 
-**This chart is not maintained by the upstream project and any issues with the chart should be raised [here](https://github.com/k8s-at-home/charts/issues/new/choose)**
+1, 2, 3 nu äter jag upp dig.
 
 ## Source Code
 

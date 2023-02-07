@@ -4,7 +4,7 @@ entries:
   - apiVersion: v2
     appVersion: 1.16.0
     created: "2023-02-06T21:31:53.4965022+01:00"
-    description: A Helm chart for Kubernetes
+    description: A Helm chart for me
     digest: d9ed9d97bf055d3f7a202203ea475806ce86e1f382c66e0426196171496f30ec
     name: home-assistant
     type: application
