@@ -14,13 +14,19 @@
 *.swp
 *.bak
 *.tmp
+*.orig
 *~
 # Various IDEs
 .project
 .idea/
 *.tmproj
 .vscode/
-# OWNERS file for Kubernetes
-OWNERS
-# helm-docs templates
-#*.gotmpl
+# drone
+.drone.yml
+# markdownlint
+.markdownlint.yaml
+# customized values
+values2.yml
+values2.yaml
+# helm packages
+*.tgz

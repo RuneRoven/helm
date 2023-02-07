@@ -1,31 +1,23 @@
 apiVersion: v1
 entries:
-  home-assistant:
-  - annotations:
-      artifacthub.io/changes: |-
-        - kind: changed
-          description: Upgraded `common` chart dependency to version 4.5.2
-    apiVersion: v2
-    appVersion: 2022.5.4
-    created: "2023-02-07T22:06:05.891107+01:00"
-    description: Home Assistant
-    digest: 3066bd3375ba3f4c5a849aee40f98d7cf245ffefb427201caec3860eb2bd67f9
-    home: https://github.com/RuneRoven/helm-charts/charts/home-assistant/
-    icon: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Home_Assistant_Logo.svg/519px-Home_Assistant_Logo.svg.png
+  homeassistant:
+  - apiVersion: v2
+    appVersion: 2023.1.7
+    created: "2023-02-07T22:28:54.2201866+01:00"
+    description: Helm chart for homeassistant
+    digest: 0adad87ec245aab58ac40e4b3267c58474daa66c4af3544148d9b7ee9cf13272
+    icon: https://upload.wikimedia.org/wikipedia/commons/6/6e/Home_Assistant_Logo.svg
     keywords:
-    - home-assistant
-    - hass
     - homeassistant
-    kubeVersion: '>=1.16.0-0'
     maintainers:
-    - email: none@none.no
-      name: RuneRoven
-    name: home-assistant
+    - email: markus.pesch+apps@cryptic.systems
+      name: Markus Pesch
+    name: homeassistant
     sources:
-    - https://github.com/home-assistant/home-assistant
-    - https://github.com/cdr/code-server
-    - https://github.com/k8s-at-home/charts/tree/master/charts/stable/home-assistant
+    - https://github.com/volker-raschek/homeassistant-charts
+    - https://hub.docker.com/r/homeassistant/home-assistant
+    type: application
     urls:
-    - https://runeroven.github.io/helm/home-assistant-13.4.2.tgz
-    version: 13.4.2
-generated: "2023-02-07T22:06:05.8889982+01:00"
+    - https://runeroven.github.io/helm/homeassistant-0.1.0.tgz
+    version: 0.1.0
+generated: "2023-02-07T22:28:54.2190003+01:00"
