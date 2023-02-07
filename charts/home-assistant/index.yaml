@@ -3,9 +3,9 @@ entries:
   homeassistant:
   - apiVersion: v2
     appVersion: 2023.1.7
-    created: "2023-02-07T22:28:54.2201866+01:00"
+    created: "2023-02-07T22:32:59.4668571+01:00"
     description: Helm chart for homeassistant
-    digest: 0adad87ec245aab58ac40e4b3267c58474daa66c4af3544148d9b7ee9cf13272
+    digest: 87ea28e9675a9e43aefaedd53e9827e4da64c58bd5fb046c7a8b20a1b8e44e08
     icon: https://upload.wikimedia.org/wikipedia/commons/6/6e/Home_Assistant_Logo.svg
     keywords:
     - homeassistant
@@ -20,4 +20,4 @@ entries:
     urls:
     - https://runeroven.github.io/helm/homeassistant-0.1.0.tgz
     version: 0.1.0
-generated: "2023-02-07T22:28:54.2190003+01:00"
+generated: "2023-02-07T22:32:59.4640755+01:00"
