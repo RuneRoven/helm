@@ -18,7 +18,7 @@ sources:
 maintainers:
   - name: RuneRoven
     email: none@none.no
-dependencies:
+#dependencies:
   #- name: common
   #  repository: https://library-charts.k8s-at-home.com
   #  version: 4.5.2
