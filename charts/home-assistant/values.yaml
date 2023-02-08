@@ -365,7 +365,7 @@ appdaemon:
     loadBalancerSourceRanges: []
     # nodePort: 30000
 
-  smarter-devices:
+  smarterDevices:
     enabled: false
     # smart usb management
     image:
