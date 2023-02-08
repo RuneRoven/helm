@@ -1,3 +1,26 @@
 apiVersion: v1
-entries: {}
-generated: "2023-02-08T21:39:40.3328449+01:00"
+entries:
+  home-assistant:
+  - apiVersion: v1
+    appVersion: 0.111.4
+    created: "2023-02-08T21:43:42.7083979+01:00"
+    description: Home Assistant
+    digest: 690219be9232c343438b218252d1a7e55af92152465c0eaa22d3eb00af9f34f6
+    home: https://github.com/RuneRoven/charts
+    icon: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Home_Assistant_Logo.svg/519px-Home_Assistant_Logo.svg.png
+    keywords:
+    - home-assistant
+    - hass
+    - homeassistant
+    maintainers:
+    - email: none@none.com
+      name: Daniel
+    name: home-assistant
+    sources:
+    - https://github.com/home-assistant/home-assistant
+    - https://github.com/danielperna84/hass-configurator
+    - https://github.com/cdr/code-server
+    urls:
+    - https://runeroven.github.io/helm/home-assistant-1.0.1.tgz
+    version: 1.0.1
+generated: "2023-02-08T21:43:42.7067708+01:00"
