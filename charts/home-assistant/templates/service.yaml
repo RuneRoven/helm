@@ -75,7 +75,7 @@ spec:
       nodePort: {{.Values.appdaemon.service.nodePort}}
 {{ end }}
 {{- end }}
-{{- if .Values.smarterDevices.enabled }}
+{{- if .Values.smarterdevices }}
       controller:
         type: daemonset
       persistence:
