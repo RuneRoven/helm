@@ -75,6 +75,19 @@ spec:
       nodePort: {{.Values.appdaemon.service.nodePort}}
 {{ end }}
 {{- end }}
+{{- if .Values.smarter-devices.enabled }}
+      controller:
+        type: daemonset
+      persistence:
+        configuration:
+          enabled: "true"
+          mountPath: "/root/config/conf.yaml"
+          subPath: "conf.yaml"
+          type: "custom"
+          volumeSpec:
+            configMap:
+              name: "smarter devices"
+{{- end }}
 {{- if .Values.service.additionalPorts }}
     {{- .Values.service.additionalPorts | toYaml | indent 4 }}
 {{- end }}

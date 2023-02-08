@@ -155,7 +155,7 @@ secret:
   keyPath: /root/.ssh
 
   #repo:
-  syncPath: /secrets
+syncPath: /secrets
 
 customcomponents:
   enabled: false
