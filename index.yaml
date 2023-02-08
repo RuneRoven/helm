@@ -1,23 +1,26 @@
 apiVersion: v1
 entries:
   home-assistant:
-  - apiVersion: v2
-    appVersion: 2023.1.7
-    created: "2023-02-07T22:41:32.2926851+01:00"
-    description: Helm chart for homea-ssistant
-    digest: 9f130eeb989c5de42ab57d3aa1e8ef5a6ab0592a73c1c37fa81b27063f032b29
-    icon: https://upload.wikimedia.org/wikipedia/commons/6/6e/Home_Assistant_Logo.svg
+  - apiVersion: v1
+    appVersion: 0.111.4
+    created: "2023-02-08T21:40:08.1065071+01:00"
+    description: Home Assistant
+    digest: 690219be9232c343438b218252d1a7e55af92152465c0eaa22d3eb00af9f34f6
+    home: https://github.com/RuneRoven/charts
+    icon: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Home_Assistant_Logo.svg/519px-Home_Assistant_Logo.svg.png
     keywords:
+    - home-assistant
+    - hass
     - homeassistant
     maintainers:
-    - email: markus.pesch+apps@cryptic.systems
-      name: Markus Pesch
+    - email: none@none.com
+      name: Daniel
     name: home-assistant
     sources:
-    - https://github.com/volker-raschek/homeassistant-charts
-    - https://hub.docker.com/r/homeassistant/home-assistant
-    type: application
+    - https://github.com/home-assistant/home-assistant
+    - https://github.com/danielperna84/hass-configurator
+    - https://github.com/cdr/code-server
     urls:
-    - https://runeroven.github.io/helm/home-assistant-0.1.1.tgz
-    version: 0.1.1
-generated: "2023-02-07T22:41:32.2910713+01:00"
+    - https://runeroven.github.io/helm/home-assistant-1.0.1.tgz
+    version: 1.0.1
+generated: "2023-02-08T21:40:08.0994462+01:00"

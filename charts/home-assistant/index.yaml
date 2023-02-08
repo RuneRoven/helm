@@ -1,23 +1,3 @@
 apiVersion: v1
-entries:
-  home-assistant:
-  - apiVersion: v2
-    appVersion: 2023.1.7
-    created: "2023-02-07T22:39:36.4712084+01:00"
-    description: Helm chart for homea-ssistant
-    digest: 9f130eeb989c5de42ab57d3aa1e8ef5a6ab0592a73c1c37fa81b27063f032b29
-    icon: https://upload.wikimedia.org/wikipedia/commons/6/6e/Home_Assistant_Logo.svg
-    keywords:
-    - homeassistant
-    maintainers:
-    - email: markus.pesch+apps@cryptic.systems
-      name: Markus Pesch
-    name: home-assistant
-    sources:
-    - https://github.com/volker-raschek/homeassistant-charts
-    - https://hub.docker.com/r/homeassistant/home-assistant
-    type: application
-    urls:
-    - https://runeroven.github.io/helm/home-assistant-0.1.1.tgz
-    version: 0.1.1
-generated: "2023-02-07T22:39:36.4712084+01:00"
+entries: {}
+generated: "2023-02-08T21:39:40.3328449+01:00"

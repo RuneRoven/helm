@@ -1,75 +1,485 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "homeassistant.fullname" . }}
+  name: {{ template "home-assistant.fullname" . }}
   labels:
-    {{- include "homeassistant.labels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ include "home-assistant.name" . }}
+    helm.sh/chart: {{ include "home-assistant.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
+  replicas: 1
+  strategy:
+    type: {{ .Values.strategyType }}
   selector:
     matchLabels:
-      {{- include "homeassistant.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: {{ include "home-assistant.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
-        {{- include "homeassistant.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/name: {{ include "home-assistant.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- if .Values.podAnnotations }}
+      annotations:
+        {{- range $key, $value := .Values.podAnnotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      {{- end }}
     spec:
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+      {{- range . }}
+        - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.hostNetwork }}
+      hostNetwork: {{ .Values.hostNetwork }}
+      dnsPolicy: ClusterFirstWithHostNet
+      {{- end }}
+      initContainers:
+      {{- if .Values.git.enabled }}
+      - name: git-sync
+        image: "{{ .Values.git.image.repository }}:{{ .Values.git.image.tag }}"
+        imagePullPolicy: {{ .Values.git.image.pullPolicy }}
+        {{- if .Values.git.command }}
+        command:
+          {{- range .Values.git.command }}
+          - {{ . | quote }}
+          {{- end }}
+        {{- else }}
+        command: ['sh', '-c', 'if [ $(git -C {{ .Values.git.syncPath }} rev-parse) ] ; then git clone {{ .Values.git.repo }} {{ .Values.git.syncPath }} ; else git -C {{ .Values.git.syncPath }} pull ; fi']
+        {{- end }}
+        volumeMounts:
+        - mountPath: /config
+          name: config
+        - mountPath: {{ .Values.git.keyPath }}
+          name: git-secret
+        {{- if .Values.extraVolumeMounts }}{{ toYaml .Values.extraVolumeMounts | trim | nindent 8 }}{{ end }}
+        {{- if .Values.usePodSecurityContext }}
+        securityContext:
+          runAsUser: {{ default 0 .Values.runAsUser }}
+        {{- if and (.Values.runAsUser) (.Values.fsGroup) }}
+        {{- if not (eq .Values.runAsUser 0.0) }}
+          fsGroup: {{ .Values.fsGroup }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.customcomponents.enabled }}
+      {{- range $component := .Values.customcomponents.components }}
+      - name: "custom-components-sync-{{ $component.name }}"
+        image: "{{ $.Values.customcomponents.image.repository }}:{{ $.Values.customcomponents.image.tag }}"
+        imagePullPolicy: {{ $.Values.customcomponents.image.pullPolicy }}
+        {{- if $.Values.customcomponents.command }}
+        command:
+          {{- range $.Values.customcomponents.command }}
+          - {{ . | quote }}
+          {{- end }}
+        {{- else }}
+        command: ['sh', '-c', 'mkdir /tmp/{{ $component.name }} && cd /tmp/{{ $component.name }} && git clone {{ $component.repo }} && mv {{ $component.componentPath }} {{ $.Values.customcomponents.syncPath }} && cd / && rm -rf /tmp/{{ $component.name }}']
+        {{- end }}
+        volumeMounts:
+        - mountPath: /custom_components
+          name: custom-components
+        securityContext:
+          runAsUser: {{ default 0 $.Values.runAsUser }}
+        {{- if and ($.Values.runAsUser) ($.Values.fsGroup) }}
+        {{- if not (eq $.Values.runAsUser 0.0) }}
+          fsGroup: {{ $.Values.fsGroup }}
+        {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.secret.enabled }}
+      - name: pull-secrets
+        image: "{{ .Values.git.image.repository }}:{{ .Values.git.image.tag }}"
+        imagePullPolicy: {{ .Values.git.image.pullPolicy }}
+        {{- if .Values.git.command }}
+        command:
+          {{- range .Values.git.command }}
+          - {{ . | quote }}
+          {{- end }}
+        {{- else }}
+        command: ['sh', '-c', 'git clone {{ .Values.secret.repo }} {{ .Values.secret.syncPath }}']
+        {{- end }}
+        volumeMounts:
+        - mountPath: /secrets
+          name: hass-secrets
+        - mountPath: {{ .Values.git.keyPath }}
+          name: git-secret
+        {{- if .Values.extraVolumeMounts }}{{ toYaml .Values.extraVolumeMounts | trim | nindent 8 }}{{ end }}
+        {{- if .Values.usePodSecurityContext }}
+        securityContext:
+          runAsUser: {{ default 0 .Values.runAsUser }}
+        {{- if and (.Values.runAsUser) (.Values.fsGroup) }}
+        {{- if not (eq .Values.runAsUser 0.0) }}
+          fsGroup: {{ .Values.fsGroup }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.wyze.enabled }}
+      nodeSelector:
+        device: wyze
       {{- end }}
       containers:
-      - name: {{ .Chart.Name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        # livenessProbe:
-        #   httpGet:
-        #     path: /
-        #     port: http
-        #     scheme: HTTP
-        ports:
-        - name: http
-          containerPort: 8123
-          protocol: TCP
-        readinessProbe:
-          httpGet:
-            port: http
-            path: /
-            scheme: HTTP
-        # startupProbe:
-        #   httpGet:
-        #     port: http
-        #     path: /
-        #     scheme: HTTP
-        resources:
-          {{- toYaml .Values.resources | nindent 12 }}
-        securityContext:
-          {{- toYaml .Values.securityContext | nindent 12 }}
-        {{- with .Values.volumeMounts }}
-        volumeMounts:
-          {{- toYaml . | nindent 8 }}
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: api
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          {{- range .Values.service.additionalPorts }}
+            - name: {{ .name }}
+              containerPort: {{ .targetPort }}
+          {{- end }}
+          {{- if .Values.probes.liveness.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: api
+              scheme: {{ .Values.probes.liveness.scheme }}
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+          {{- end }}
+          {{- if .Values.probes.readiness.enabled }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: api
+              scheme: {{ .Values.probes.readiness.scheme }}
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+          {{- end }}
+          {{- if .Values.probes.startup.enabled }}
+          startupProbe:
+            httpGet:
+              path: /
+              port: api
+              scheme: {{ .Values.probes.startup.scheme }}
+            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
+            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
+          {{- end }}
+          env:
+            {{- range $key, $value := .Values.extraEnv }}
+            - name: {{ $key }}
+              value: {{ $value }}
+            {{- end }}
+            {{- range $name, $opts := .Values.extraEnvSecrets }}
+            - name: {{ $name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $opts.secret }}
+                  key: {{ $opts.key }}
+            {{- end }}
+          envFrom:
+          {{- range .Values.extraSecretForEnvFrom }}
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          volumeMounts:
+          - mountPath: /config
+            name: config
+          - mountPath: /custom_components
+            name: custom-components
+          - mountPath: /secrets
+            name: hass-secrets
+          {{- if .Values.zwave.enabled }}
+          - mountPath: /dev/ttyACM0
+            name: ttyacm
+          {{- end }}
+          {{- if .Values.wyze.enabled }}
+          - mountPath: /dev/wyze
+            name: wyze
+          {{- end }}
+          {{- range .Values.hostMounts }}
+          {{- if .mountPath }}
+          - mountPath: {{ .mountPath }}
+          {{- else }}
+          - mountPath: {{ .hostPath }}
+          {{- end }}
+            name: {{ .name }}
+          {{- end }}
+          {{- if .Values.git.enabled }}
+          - mountPath: {{ .Values.git.keyPath }}
+            name: git-secret
+          {{- end }}
+          {{- if .Values.extraVolumeMounts }}{{ toYaml .Values.extraVolumeMounts | trim | nindent 10 }}{{ end }}
+          {{- if .Values.usePodSecurityContext }}
+          securityContext:
+            runAsUser: {{ default 0 .Values.runAsUser }}
+          {{- if and (.Values.runAsUser) (.Values.fsGroup) }}
+          {{- if not (eq .Values.runAsUser 0.0) }}
+            fsGroup: {{ .Values.fsGroup }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          {{- if or .Values.zwave.enabled (or (.Values.wyze.enabled) (.Values.hostMounts)) }}
+          securityContext:
+            privileged: true
+          {{- end }}
+        {{- if .Values.configurator.enabled }}
+        - name: configurator
+          image: "{{ .Values.configurator.image.repository }}:{{ .Values.configurator.image.tag }}"
+          imagePullPolicy: {{ .Values.configurator.image.pullPolicy }}
+          ports:
+            - name: configurator
+              containerPort: {{ .Values.configurator.service.port }}
+              protocol: TCP
+          env:
+            {{- if .Values.configurator.hassApiPassword }}
+            - name: HC_HASS_API_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "home-assistant.fullname" . }}-configurator
+                  key: hass-api-password
+            {{- end }}
+            {{- if and (.Values.configurator.username) (.Values.configurator.password) }}
+            - name: HC_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "home-assistant.fullname" . }}-configurator
+                  key: username
+            - name: HC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "home-assistant.fullname" . }}-configurator
+                  key: password
+            {{- end }}
+            {{- if .Values.configurator.hassApiUrl }}
+            - name: HC_HASS_API
+              value: "{{ .Values.configurator.hassApiUrl }}"
+            {{- else }}
+            - name: HC_HASS_API
+              value: "http://127.0.0.1:8123/api/"
+            {{- end }}
+            {{- if .Values.configurator.basepath }}
+            - name: HC_BASEPATH
+              value: "{{ .Values.configurator.basepath }}"
+            {{- end }}
+            {{- if .Values.configurator.enforceBasepath }}
+            - name: HC_ENFORCE_BASEPATH
+              value: "{{ .Values.configurator.enforceBasepath }}"
+            {{- end }}
+            {{- if and (.Values.git.enabled) (.Values.git.user.name) }}
+            - name: GIT_AUTHOR_NAME
+              value: {{ .Values.git.user.name }}
+            - name: GIT_COMMITTER_NAME
+              value: {{ .Values.git.user.name }}
+            {{ end }}
+            {{- if and (.Values.git.enabled) (.Values.git.user.email) }}
+            - name: GIT_AUTHOR_EMAIL
+              value: {{ .Values.git.user.email }}
+            - name: GIT_COMMITTER_EMAIL
+              value: {{ .Values.git.user.email }}
+            {{ end }}
+            {{- range $key, $value := .Values.configurator.extraEnv }}
+            - name: {{ $key }}
+              value: {{ $value }}
+            {{- end }}
+          volumeMounts:
+          - mountPath: /config
+            name: config
+          {{- if .Values.git.enabled }}
+          - mountPath: {{ .Values.git.keyPath }}
+            name: git-secret
+          {{- end }}
+          {{- if .Values.extraVolumeMounts }}{{ toYaml .Values.extraVolumeMounts | trim | nindent 10 }}{{ end }}
+          {{- if .Values.usePodSecurityContext }}
+          securityContext:
+            runAsUser: {{ default 0 .Values.runAsUser }}
+          {{- if and (.Values.runAsUser) (.Values.fsGroup) }}
+          {{- if not (eq .Values.runAsUser 0.0) }}
+            fsGroup: {{ .Values.fsGroup }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          resources:
+{{ toYaml .Values.configurator.resources | indent 12 }}
         {{- end }}
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- if .Values.podPriorityClassName }}
-      priorityClassName: {{ .Values.podPriorityClassName }}
-      {{- end }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- if .Values.vscode.enabled }}
+        - name: vscode
+          image: "{{ .Values.vscode.image.repository }}:{{ .Values.vscode.image.tag }}"
+          imagePullPolicy: {{ .Values.vscode.image.pullPolicy }}
+          workingDir: {{ .Values.vscode.hassConfig }}
+          args:
+            - --port={{ .Values.vscode.service.port }}
+            {{- if not (.Values.vscode.password) }}
+            - --auth=none
+            {{- end }}
+            {{- if .Values.vscode.vscodePath }}
+            - --extensions-dir={{ .Values.vscode.vscodePath }}
+            - --user-data-dir={{ .Values.vscode.vscodePath }}
+            - {{ .Values.vscode.hassConfig }}
+            {{- end }}
+          ports:
+            - name: vscode
+              containerPort: {{ .Values.vscode.service.port }}
+              protocol: TCP
+          env:
+            {{- if .Values.vscode.password }}
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "home-assistant.fullname" . }}-vscode
+                  key: password
+            {{- end }}
+            {{- if and (.Values.git.enabled) (.Values.git.user.name) }}
+            - name: GIT_AUTHOR_NAME
+              value: {{ .Values.git.user.name }}
+            - name: GIT_COMMITTER_NAME
+              value: {{ .Values.git.user.name }}
+            {{ end }}
+            {{- if and (.Values.git.enabled) (.Values.git.user.email) }}
+            - name: GIT_AUTHOR_EMAIL
+              value: {{ .Values.git.user.email }}
+            - name: GIT_COMMITTER_EMAIL
+              value: {{ .Values.git.user.email }}
+            {{ end }}
+            {{- range $key, $value := .Values.vscode.extraEnv }}
+            - name: {{ $key }}
+              value: {{ $value }}
+            {{- end }}
+          volumeMounts:
+          - mountPath: /config
+            name: config
+          {{- if .Values.git.enabled }}
+          - mountPath: {{ .Values.git.keyPath }}
+            name: git-secret
+          {{- end }}
+          {{- if .Values.extraVolumeMounts }}{{ toYaml .Values.extraVolumeMounts | trim | nindent 10 }}{{ end }}
+          {{- if .Values.usePodSecurityContext }}
+          securityContext:
+            runAsUser: {{ default 0 .Values.runAsUser }}
+          {{- if and (.Values.runAsUser) (.Values.fsGroup) }}
+          {{- if not (eq .Values.runAsUser 0.0) }}
+            fsGroup: {{ .Values.fsGroup }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          resources:
+{{ toYaml .Values.vscode.resources | indent 12 }}
+        {{- end }}
+        {{- if .Values.appdaemon.enabled }}
+        - name: appdaemon
+          image: "{{ .Values.appdaemon.image.repository }}:{{ .Values.appdaemon.image.tag }}"
+          imagePullPolicy: {{ .Values.appdaemon.image.pullPolicy }}
+          ports:
+            - name: appdaemon
+              containerPort: {{ .Values.appdaemon.service.port }}
+              protocol: TCP
+          env:
+            - name: HA_URL
+              value: "http://localhost:{{ .Values.service.port }}"
+            {{- if .Values.appdaemon.ingress.enabled }}
+            - name: DASH_URL
+              #value: http{{ if .Values.appdaemon.ingress.tls }}s{{ end }}://{{ index .Values.appdaemon.ingress.hosts 0 }}
+              value: http://0.0.0.0:{{ .Values.appdaemon.service.port }}
+            {{- end }}
+            {{- if .Values.appdaemon.haToken }}
+            - name: TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "home-assistant.fullname" . }}-appdaemon
+                  key: token
+            {{- end }}
+            {{- if and (.Values.git.enabled) (.Values.git.user.name) }}
+            - name: GIT_AUTHOR_NAME
+              value: {{ .Values.git.user.name }}
+            - name: GIT_COMMITTER_NAME
+              value: {{ .Values.git.user.name }}
+            {{ end }}
+            {{- if and (.Values.git.enabled) (.Values.git.user.email) }}
+            - name: GIT_AUTHOR_EMAIL
+              value: {{ .Values.git.user.email }}
+            - name: GIT_COMMITTER_EMAIL
+              value: {{ .Values.git.user.email }}
+            {{ end }}
+            {{- range $key, $value := .Values.vscode.extraEnv }}
+            - name: {{ $key }}
+              value: {{ $value }}
+            {{- end }}
+          volumeMounts:
+          - mountPath: /ha-conf
+            name: config
+          - mountPath: /conf
+            subPath: appdaemon
+            name: config
+          {{- if .Values.extraVolumeMounts }}{{ toYaml .Values.extraVolumeMounts | trim | nindent 10 }}{{ end }}
+          {{- if .Values.usePodSecurityContext }}
+          securityContext:
+            runAsUser: {{ default 0 .Values.runAsUser }}
+          {{- if and (.Values.runAsUser) (.Values.fsGroup) }}
+          {{- if not (eq .Values.runAsUser 0.0) }}
+            fsGroup: {{ .Values.fsGroup }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          resources:
+{{ toYaml .Values.appdaemon.resources | indent 12 }}
+        {{- end }}
       volumes:
-      {{- with .Values.volumes }}
-        {{- toYaml . | nindent 6 }}
+      - name: config
+      {{- if .Values.persistence.enabled }}
+        {{- if .Values.persistence.hostPath }}
+        hostPath:
+          path: {{.Values.persistence.hostPath}}
+          type: Directory
+        {{- else }}
+        persistentVolumeClaim:
+          claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ template "home-assistant.fullname" . }}{{- end }}
+        {{- end }}
+      {{- else }}
+        emptyDir: {}
+      {{ end }}
+      {{- if .Values.customcomponents.enabled }}
+      - name: custom-components
+        emptyDir: {}
+      {{ end }}
+      {{- if .Values.secret.enabled }}
+      - name: hass-secrets
+        emptyDir: {}
+      {{ end }}
+      {{- if .Values.zwave.enabled }}
+      - name: ttyacm
+        hostPath:
+          path: /dev/{{.Values.zwave.device}}
       {{- end }}
+      {{- if .Values.wyze.enabled }}
+      - name: wyze
+        hostPath:
+          path: /dev/{{.Values.wyze.device}}
+      {{- end }}
+      {{- range .Values.hostMounts }}
+      - name: {{ .name }}
+        hostPath:
+          path: {{.hostPath}}
+          {{- if .type }}
+          type: {{ .type }}
+          {{- end }}
+      {{- end }}
+      {{- if .Values.git.enabled }}
+      - name: git-secret
+        secret:
+          defaultMode: 256
+          secretName: {{ .Values.git.secret }}
+      {{ end }}
+      {{- if .Values.extraVolumes  }}{{ toYaml .Values.extraVolumes | trim | nindent 6 }}{{ end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
