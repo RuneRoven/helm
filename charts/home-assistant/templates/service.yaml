@@ -56,7 +56,7 @@ spec:
 {{ if (and (eq .Values.configurator.service.type "NodePort") (not (empty .Values.configurator.service.nodePort))) }}
       nodePort: {{.Values.configurator.service.nodePort}}
 {{ end }}
-{{- end }}
+{{- end }} 
 {{- if .Values.vscode.enabled }}
     - name: vscode
       port: {{ .Values.vscode.service.port }}

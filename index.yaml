@@ -3,9 +3,9 @@ entries:
   home-assistant:
   - apiVersion: v1
     appVersion: 0.111.4
-    created: "2023-02-08T22:46:39.1683523+01:00"
+    created: "2023-02-08T22:52:26.0780196+01:00"
     description: Home Assistant
-    digest: 69393b453f5eb2ab5a8cc9a0a00407f73bfd035e62bb111e50bb23c4602562be
+    digest: 84dd9fac99727c9d207881c4ca8340044fb9dd33695efab5ce626e2716f676de
     home: https://github.com/RuneRoven/charts
     icon: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Home_Assistant_Logo.svg/519px-Home_Assistant_Logo.svg.png
     keywords:
@@ -23,4 +23,4 @@ entries:
     urls:
     - https://runeroven.github.io/helm/home-assistant-1.0.1.tgz
     version: 1.0.1
-generated: "2023-02-08T22:46:39.1662288+01:00"
+generated: "2023-02-08T22:52:26.0740384+01:00"
