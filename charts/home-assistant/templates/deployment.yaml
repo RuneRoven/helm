@@ -184,10 +184,14 @@ spec:
           volumeMounts:
           - mountPath: /config
             name: config
+          {{- if .Values.customcomponents.enabled }}
           - mountPath: /custom_components
             name: custom-components
+          {{- end }}
+          {{- if .Values.secret.enabled }}
           - mountPath: /secrets
             name: hass-secrets
+          {{- end }}
           {{- if .Values.zwave.enabled }}
           - mountPath: /dev/ttyACM0
             name: ttyacm
